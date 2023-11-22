@@ -29,8 +29,9 @@ namespace TweaksAndFixes.Patches
                     }
                     else if (__instance.name.ToLower().Contains("map"))
                     {
-                        __instance.gameObject.AddComponent<ShipItemMoveOnAltActivate>();
-                        __instance.gameObject.AddComponent<ShipItemRotateOnAltActivate>().targetAngle = 90f;
+                        __instance.gameObject.AddComponent<ShipItemMoveOnAltActivate>().targetDistance = 1.15f;
+                        __instance.gameObject.GetComponent<ShipItemMoveOnAltActivate>().targetHeight = -0.25f;
+                        __instance.gameObject.AddComponent<ShipItemRotateOnAltActivate>().targetAngle = 75f;
                     }
                     else if (__instance is ShipItemScroll)
                     {
@@ -64,6 +65,7 @@ namespace TweaksAndFixes.Patches
                 if (Main.enabled)
                 {
                     ResetMove(__instance);
+                    ResetRotate(__instance);
                 }
             }
         }
@@ -72,18 +74,18 @@ namespace TweaksAndFixes.Patches
         private static class OnAltActivatePatch
         {
             [HarmonyPrefix]
-            public static void Prefix(ShipItem __instance)
+            public static bool Prefix(ShipItem __instance)
             {
                 if (Main.enabled)
                 {
                     Rotate(__instance);
                     Move(__instance);
+                    if (__instance is ShipItemScroll instance)
+                    {
+                        OpenClose(instance);
+                    }
                 }
-                if (__instance is ShipItemScroll instance)
-                {
-                    OpenClose(instance);
-                }
-
+                return true;
             }
 
             private static void OpenClose(ShipItemScroll instance)
@@ -139,9 +141,14 @@ namespace TweaksAndFixes.Patches
                     if (instance.holdDistance != shipMoveOnAltActivate.defaultDistance)
                     {
                         instance.StartCoroutine(MoveShipItem(shipMoveOnAltActivate, shipMoveOnAltActivate.defaultDistance));
-                        return;
                     }
-                    instance.StartCoroutine(MoveShipItem(shipMoveOnAltActivate, shipMoveOnAltActivate.targetDistance));
+                    else instance.StartCoroutine(MoveShipItem(shipMoveOnAltActivate, shipMoveOnAltActivate.targetDistance));
+                    if (instance.holdHeight != shipMoveOnAltActivate.defaultHeight)
+                    {
+                        instance.StartCoroutine(MoveShipItem2(shipMoveOnAltActivate, shipMoveOnAltActivate.defaultHeight));
+                    }
+                    else instance.StartCoroutine(MoveShipItem2(shipMoveOnAltActivate, shipMoveOnAltActivate.targetHeight));
+                    return;
                 }
             }
 
@@ -172,14 +179,30 @@ namespace TweaksAndFixes.Patches
                 Debug.Log("moved.");
                 yield break;
             }
+
+            public static IEnumerator MoveShipItem2(ShipItemMoveOnAltActivate shipMoveOnAltActivate, float target)
+            {
+                float start = shipMoveOnAltActivate.shipItem.holdHeight;
+                for (float t = 0f; t < 1f; t += Time.deltaTime * 3.22f)
+                {
+                    shipMoveOnAltActivate.shipItem.holdHeight= Mathf.Lerp(start, target, t);
+                    yield return new WaitForEndOfFrame();
+                }
+                shipMoveOnAltActivate.shipItem.holdHeight= target;
+                shipMoveOnAltActivate.moving = false;
+                Debug.Log("moved.");
+                yield break;
+            }
         }
 
-        public static void ResetMove(ShipItem instance)
+
+    public static void ResetMove(ShipItem instance)
         {
             ShipItemMoveOnAltActivate shipMoveOnAltActivate = instance.GetComponent<ShipItemMoveOnAltActivate>();
             if (shipMoveOnAltActivate)
             {
                 instance.holdDistance = shipMoveOnAltActivate.defaultDistance;
+                instance.holdHeight = shipMoveOnAltActivate.defaultHeight;
             }
         }
 

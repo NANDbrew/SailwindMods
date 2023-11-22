@@ -2,6 +2,7 @@
 using SailwindModdingHelper;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -50,8 +51,8 @@ namespace TweaksAndFixes.Patches
                     if (__args.Length > 0)
                     {
                         category = (int)__args[0];
-                        __instance.InvokePrivateMethod("UpdateDescriptionText");
                     }
+                    __instance.UpdateDescriptionText();
                 }
             }
         }
@@ -86,6 +87,10 @@ namespace TweaksAndFixes.Patches
                         for (int i = 0; i < currentParts.availableParts.Count; i++)
                         {
                             int thisPartMass = Mathf.RoundToInt((float)currentParts.availableParts[i].partOptions[currentOrder.orderedOptions[i]].mass);
+                            if (currentParts.availableParts[i].partOptions[currentOrder.orderedOptions[i]].optionName.Contains("stay"))
+                            {
+                                currentParts.availableParts[i].category = 2;
+                            }
                             if (currentParts.availableParts[i].category == category && thisPartMass > 0)
                             {
                                 text = text + "\n" + currentParts.availableParts[i].partOptions[currentOrder.orderedOptions[i]].optionName + ": " + thisPartMass;
@@ -102,6 +107,33 @@ namespace TweaksAndFixes.Patches
                 }
             }
         }
+/*
+        [HarmonyPatch(typeof(ShipyardUI), "RefreshPartsPanel")]
+        private static class ShipyardPartCategoryPatch
+        {
+            [HarmonyPrefix]
+            public static bool Prefix(ShipyardUI __instance, ref int category, ref bool freshStart)
+            {
+                BoatCustomParts component = GameState.currentShipyard.GetCurrentBoat().GetComponent<BoatCustomParts>();
+                BoatPartsOrder currentOrder = GameState.currentShipyard.partsInstaller.GetCurrentOrder();
+                if (component)
+                {
+                    int num = 0;
+                    for (int i = 0; i < __instance.GetPrivateField<TextMesh[]>("partOptionsTexts").Length; i++)
+                    {
+                        for (int j = num; j < component.availableParts.Count; j++)
+                        {
+                            if (component.availableParts[j].partOptions[j].optionName.Contains("stay"))
+                            {
+                                component.availableParts[j].category = 1;
+                            }
+                            num++;
+                        }
+                    }
+                }
+                return true;
+            }
+        }*/
         /*        [HarmonyPatch(typeof(ShipyardUI), "LateUpdate")]
                 private static class ShipyardUIMenuPatch
                 {

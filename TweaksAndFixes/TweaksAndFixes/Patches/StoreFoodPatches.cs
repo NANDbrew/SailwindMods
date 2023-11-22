@@ -41,13 +41,12 @@ namespace TweaksAndFixes.Patches
                         if (crateGood)
                         {
                             maxAmount = PrefabsDirectory.instance.directory[itemCrate.GetPrivateField<Good>("goodC").GetComponent<SaveablePrefab>().prefabIndex].GetComponent<ShipItemCrate>().amount;
+
+                            if (itemCrate.smokedFood && (heldItem.amount < 1f || heldItem.amount > 1.5f)) return true;
+                            if (!itemCrate.smokedFood && (heldItem.amount > 0.75f)) return true;
                         }
                         else crateSizes.TryGetValue(itemCrate.name, out maxAmount);
 
-                        if (itemCrate.smokedFood && (heldItem.amount < 1f || heldItem.amount > 1.5f))
-                        {
-                            return true;
-                        }
                         if (itemCrate.amount < maxAmount)
                         {
                             itemCrate.amount++;
@@ -86,5 +85,59 @@ namespace TweaksAndFixes.Patches
                 return true;
             }
         }
+
+ /*       [HarmonyPatch(typeof(PickupableItem), "OnAltActivate")]
+        private static class OnAltActivatePatch
+        {
+            [HarmonyPrefix]
+            public static bool Prefix(PickupableItem __instance, PickupableItem heldItem)
+            {
+                if (__instance is ShipItemBottle)
+                {
+                    ShipItemBottle instance = (ShipItemBottle) __instance;
+                    ShipItemBottle component = heldItem.GetComponent<ShipItemBottle>();
+                    if (component)
+                    {
+                        Good instanceGoodC = instance.GetPrivateField<Good>("goodC");
+                        Good heldItemGoodC = component.GetPrivateField<Good>("goodC");
+
+                        if (!instance.sold)
+                        {
+                            return false;
+                        }
+                        if (!component.sold)
+                        {
+                            return false;
+                        }
+                        if (instanceGoodC && instanceGoodC.GetMissionIndex() > -1)
+                        {
+                            return false;
+                        }
+                        if (heldItemGoodC && heldItemGoodC.GetMissionIndex() > -1)
+                        {
+                            return false;
+                        }
+                        if (component.GetPrivateField<float>("capacity") <= instance.GetPrivateField<float>("capacity"))
+                        {
+                            instance.health = component.FillBottle(instance.amount, instance.health);
+                        }
+                        else
+                        {
+                            component.health = instance.FillBottle(component.amount, component.health);
+                        }
+                        instance.UpdateLookText();
+                        instance.itemRigidbodyC.UpdateMass();
+                        Debug.Log("Poured liquid.");
+                    }
+                    else if (!heldItem.big && __instance.allowPlacingItems)
+                    {
+                        return true;
+                    }
+                    return false;
+                }
+                return true;
+            }
+        }*/
+
     }
 }
