@@ -348,3 +348,5 @@ MigrationBackup/
 
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
+/TweaksAndFixes/TweaksAndFixes/postBuild.bat
+/TweaksAndFixes/TweaksAndFixes/preBuild.bat

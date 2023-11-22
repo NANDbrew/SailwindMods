@@ -1,4 +1,5 @@
 ﻿using HarmonyLib;
+using SailwindModdingHelper;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -31,6 +32,11 @@ namespace TweaksAndFixes.Patches
                         __instance.gameObject.AddComponent<ShipItemMoveOnAltActivate>();
                         __instance.gameObject.AddComponent<ShipItemRotateOnAltActivate>().targetAngle = 90f;
                     }
+                    else if (__instance is ShipItemScroll)
+                    {
+                        __instance.gameObject.AddComponent<ShipItemMoveOnAltActivate>().targetDistance = 1.15f;
+                    }
+
                 }
             }
         }
@@ -44,6 +50,7 @@ namespace TweaksAndFixes.Patches
                 if (Main.enabled)
                 {
                     ResetMove(__instance);
+                    ResetRotate(__instance);
                 }
             }
         }
@@ -71,6 +78,32 @@ namespace TweaksAndFixes.Patches
                 {
                     Rotate(__instance);
                     Move(__instance);
+                }
+                if (__instance is ShipItemScroll instance)
+                {
+                    OpenClose(instance);
+                }
+
+            }
+
+            private static void OpenClose(ShipItemScroll instance)
+            {
+                MeshFilter filter = instance.GetComponent<MeshFilter>();
+                Mesh closedMesh = instance.GetPrivateField<Mesh>("closedMesh");
+                Mesh openMesh = instance.GetPrivateField<Mesh>("openMesh");
+                if (filter.sharedMesh == closedMesh)
+                {
+                    instance.GetPrivateField<Renderer>("page").enabled = true;
+                    UISoundPlayer.instance.PlayOpenSound();
+                    instance.GetComponent<MeshFilter>().sharedMesh = openMesh;
+                    instance.InvokePrivateMethod("UpdateArrows");
+                }
+                else if (filter.sharedMesh == openMesh)
+                {
+                    instance.GetPrivateField<Renderer>("page").enabled = false;
+                    UISoundPlayer.instance.PlayCloseSound();
+                    instance.GetComponent<MeshFilter>().sharedMesh = closedMesh;
+                    instance.InvokePrivateMethod("HideArrows");
                 }
             }
 
@@ -149,5 +182,15 @@ namespace TweaksAndFixes.Patches
                 instance.holdDistance = shipMoveOnAltActivate.defaultDistance;
             }
         }
+
+        public static void ResetRotate(ShipItem instance)
+        {
+            ShipItemRotateOnAltActivate shipRotateOnAltActivate = instance.GetComponent<ShipItemRotateOnAltActivate>();
+            if (shipRotateOnAltActivate)
+            {
+                instance.heldRotationOffset = 0f;
+            }
+        }
+
     }
 }

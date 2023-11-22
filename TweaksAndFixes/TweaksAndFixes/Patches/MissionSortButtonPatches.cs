@@ -15,13 +15,6 @@ namespace TweaksAndFixes.Patches
     internal static class MissionSortButtonPatches
     {
         private static TextMesh cargo;
-        private static Dictionary<string, string> cargoNames = new Dictionary<string, string>()
-        {
-            {"very_big_crate", "Very Big Crate" },
-            {"big_crate", "Big Crate" },
-            {"crate", "Small Crate" },
-            {"barrel_closed", "Barrel" },
-        };
 
         public static void SortMissions(Port instance)
         {
@@ -78,7 +71,7 @@ namespace TweaksAndFixes.Patches
                             }
                         }
                     }
-                    foreach (Transform item in ___UI.transform.parent)
+/*                    foreach (Transform item in ___UI.transform.parent)
                     {
                         if (item.name == "current mission buttons")
                         {
@@ -101,7 +94,7 @@ namespace TweaksAndFixes.Patches
                                 }
                             }
                         }
-                    }
+                    }*/
                     done = true;
                 }
             }
@@ -126,7 +119,7 @@ namespace TweaksAndFixes.Patches
                 if (___currentMission.missionIndex == -1)
                 {
                     PlayerMissions.AcceptMission(___currentMission);
-                    MissionListUI.instance.DisplayMissions(___currentMission.originPort.GetMissions(MissionListUI.instance.GetPrivateField<int>("currentPage")));
+                    MissionListUI.instance.DisplayMissions(___currentMission.originPort.GetMissions(MissionListUI.instance.GetPrivateField<int>("currentPage"), MissionListUI.instance.GetPrivateField<bool>("worldMissions")));
                     ___UI.SetActive(false);
                     __instance.InvokePrivateMethod("UpdateTexts");
                     return false;
@@ -143,11 +136,7 @@ namespace TweaksAndFixes.Patches
             {
                 if (___currentMission != null)
                 {
-                    string meshName = ___currentMission.goodPrefab.GetComponent<MeshFilter>().sharedMesh.name;
-                    if (!cargoNames.TryGetValue(meshName, out string cargoName))
-                    {
-                        cargoName = meshName;
-                    }
+                    string cargoName = ___currentMission.goodPrefab.GetComponent<Good>().sizeDescription;
                     cargo.text = cargoName;
                 }
             }
@@ -183,7 +172,7 @@ namespace TweaksAndFixes.Patches
             }
         }
 
-        [HarmonyPatch(typeof(Port), "GenerateMissions")]
+/*        [HarmonyPatch(typeof(Port), "GenerateMissions")]
         private static class GenerateMissionsPatch
         {
             [HarmonyPrefix]
@@ -258,6 +247,6 @@ namespace TweaksAndFixes.Patches
                         }
                 }
             }
-        }
+        }*/
     }
 }

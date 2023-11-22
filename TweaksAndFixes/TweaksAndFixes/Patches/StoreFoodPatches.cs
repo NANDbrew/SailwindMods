@@ -11,51 +11,50 @@ namespace TweaksAndFixes.Patches
 {
     internal static class StoreFoodPatches
     {
+        private static readonly Dictionary<string, float> crateSizes = new Dictionary<string, float>()
+        {
+            {"firewood", 12f },
+            {"fishing hooks", 20f },
+            {"white tobacco", 6f },
+            {"black tobacco", 6f },
+            {"brown tobacco", 6f },
+            {"green tobacco", 6f },
+        };
+
         [HarmonyPatch(typeof(ShipItem), "OnItemClick")]
         private static class OnItemClickPatch
         {
             [HarmonyPrefix]
-            public static bool Prefix(ShipItem __instance, PickupableItem heldItem, ref bool __result)
+            public static bool Prefix(ShipItem __instance, ShipItem heldItem, ref bool __result)
             {
                 if (!Main.enabled) return true;
-                if(__instance is ShipItemCrate itemCrate)
+                if (__instance is ShipItemCrate itemCrate)
                 {
-                    ShipItemFood foodItem = heldItem.GetComponent<ShipItemFood>();
-                    if (foodItem)
+                    var thisPrefabIndex = heldItem.gameObject.GetComponent<SaveablePrefab>().prefabIndex;
+                    var crateItemPrefabIndex = itemCrate.GetContainedPrefab().GetComponent<SaveablePrefab>().prefabIndex;
+
+                    Good crateGood = __instance.GetPrivateField<Good>("goodC");
+                    if (crateGood && crateGood.GetMissionIndex() > -1) return true;
+                    if (thisPrefabIndex == crateItemPrefabIndex)
                     {
-                        Good foodGood = foodItem.GetPrivateField<Good>("good");
-                        if ((foodGood && foodGood.GetMissionIndex() == -1) || !foodGood)
+                        float maxAmount = 99;
+                        if (crateGood)
                         {
-                            if (foodItem.name == itemCrate.name)
-                            {
-                                itemCrate.amount++;
-                                foodItem.SetPrivateField("currentMesh", 0);
-                                foodItem.health = 3;
-                                foodItem.DestroyItem();
-                                __result = false;
-                                return false;
-                            }
-                            else if (itemCrate.amount <= 0)
-                            {
-                                GameObject prefab = Prefabs.GetPrefab(foodItem.name);
-                                if (prefab)
-                                {
-                                    itemCrate.name = foodItem.name;
-                                    itemCrate.amount++;
-                                    foodItem.SetPrivateField("currentMesh", 0);
-                                    foodItem.health = 3;
-                                    if (foodGood)
-                                    {
-                                        GameObject.Destroy(itemCrate.gameObject.GetComponent<Good>());
-                                        Good good = itemCrate.gameObject.AddComponent(foodGood);
-                                        itemCrate.SetPrivateField("goodC", good);
-                                    }
-                                    itemCrate.SetPrivateField("containedPrefab", prefab);
-                                    foodItem.DestroyItem();
-                                    __result = false;
-                                    return false;
-                                }
-                            }
+                            maxAmount = PrefabsDirectory.instance.directory[itemCrate.GetPrivateField<Good>("goodC").GetComponent<SaveablePrefab>().prefabIndex].GetComponent<ShipItemCrate>().amount;
+                        }
+                        else crateSizes.TryGetValue(itemCrate.name, out maxAmount);
+
+                        if (itemCrate.smokedFood && (heldItem.amount < 1f || heldItem.amount > 1.5f))
+                        {
+                            return true;
+                        }
+                        if (itemCrate.amount < maxAmount)
+                        {
+                            itemCrate.amount++;
+                            heldItem.DestroyItem();
+                            UISoundPlayer.instance.PlayUISound(UISounds.itemPickup, 0.8f, 0.5f);
+
+                            return false;
                         }
                     }
                 }
@@ -70,11 +69,18 @@ namespace TweaksAndFixes.Patches
             public static bool Prefix(ShipItemCrate __instance)
             {
                 if (!Main.enabled) return true;
-                if (!__instance.sold) return true;
-                if (__instance.GetPrivateField<Good>("goodC") && __instance.GetPrivateField<Good>("goodC").GetMissionIndex() > -1) return true;
-                if(__instance.amount <= 0)
+                Good crateGood = __instance.GetPrivateField<Good>("goodC");
+                if (crateGood && crateGood.GetMissionIndex() > -1) return true;
+                if (__instance.sold)
                 {
-                    __instance.lookText = "empty";
+                    float maxAmount = 99;
+                    if (crateGood) maxAmount = PrefabsDirectory.instance.directory[__instance.GetPrivateField<Good>("goodC").GetComponent<SaveablePrefab>().prefabIndex].GetComponent<ShipItemCrate>().amount;
+                    else crateSizes.TryGetValue(__instance.name, out maxAmount);
+                    string text = __instance.name;
+                    if (__instance.smokedFood) text += " (smoked)";
+
+                    text += "\n" + __instance.amount + " / " + maxAmount;
+                    __instance.lookText = text;
                     return false;
                 }
                 return true;
