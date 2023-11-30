@@ -18,6 +18,7 @@ namespace TweaksAndFixes.Patches
 
         public static void SortMissions(Port instance)
         {
+            ;
             MissionStoring missionStoringcomponent = instance.gameObject.GetComponent<MissionStoring>();
             Mission[] missions = instance.GetPrivateField<Mission[]>("missions");
             for (int k = 0; k < missions.Length; k++)
@@ -25,6 +26,7 @@ namespace TweaksAndFixes.Patches
                 if (k + missionStoringcomponent.page < missionStoringcomponent.missions.Count)
                 {
                     missions[k] = missionStoringcomponent.missions[k + missionStoringcomponent.page];
+
                 }
             }
             instance.SetPrivateField("missions", missions);
@@ -99,7 +101,7 @@ namespace TweaksAndFixes.Patches
                 }
             }
         }
-
+        // don't revert mission list to page 1 after accepting a mission
         [HarmonyPatch(typeof(MissionDetailsUI), "ClickButton")]
         private static class ClickButtonPatch
         {
@@ -142,7 +144,7 @@ namespace TweaksAndFixes.Patches
             }
         }
 
-        [HarmonyPatch(typeof(PortDude), "ActivateMissionListUI")]
+    /*    [HarmonyPatch(typeof(PortDude), "ActivateMissionListUI")]
         private static class ActivateMissionListUIPatch
         {
             [HarmonyPostfix]
@@ -172,13 +174,15 @@ namespace TweaksAndFixes.Patches
             }
         }
 
-/*        [HarmonyPatch(typeof(Port), "GenerateMissions")]
+        [HarmonyPatch(typeof(Port), "GenerateMissions")]
         private static class GenerateMissionsPatch
         {
             [HarmonyPrefix]
             public static bool Prefix(Port __instance, int page, ref Mission[] ___missions, ref int ___currentMissionCount, ref Port[] ___destinationPorts, GameObject[] ___producedGoodPrefabs)
             {
-                if (!Main.enabled) return true;
+                //if (!Main.enabled) return true;
+                Utilities.Log(Utilities.LogType.Log, "Generating Missions");
+
                 ___missions = new Mission[5];
                 ___currentMissionCount = 0;
                 int num = page * ___missions.Length;
@@ -218,6 +222,8 @@ namespace TweaksAndFixes.Patches
                 missionStoringcomponent.missions = list;
                 list.Sort(SortMissions);
                 MissionSortButtonPatches.SortMissions(__instance);
+                //Utilities.Log(Utilities.LogType.Log, "Generated Missions");
+
                 return false;
             }
 
@@ -227,22 +233,32 @@ namespace TweaksAndFixes.Patches
                 {
                     case MissionSorting.PricePerMile:
                         {
+                            Utilities.Log(Utilities.LogType.Log, "sorting by price per mile");
+
                             return s1.pricePerKm.CompareTo(s2.pricePerKm);
                         }
                     case MissionSorting.TotalPrice:
                         {
+                            Utilities.Log(Utilities.LogType.Log, "sorting by total price");
+
                             return s1.totalPrice.CompareTo(s2.totalPrice);
                         }
                     case MissionSorting.GoodCount:
                         {
+                            Utilities.Log(Utilities.LogType.Log, "sorting by good count");
+
                             return s1.goodCount.CompareTo(s2.goodCount);
                         }
                     case MissionSorting.Distance:
                         {
+                            Utilities.Log(Utilities.LogType.Log, "sorting by distance");
+
                             return s1.distance.CompareTo(s2.distance);
                         }
                     default:
                         {
+                            Utilities.Log(Utilities.LogType.Log, "sorting by price per mile (default)");
+
                             return s1.pricePerKm.CompareTo(s2.pricePerKm);
                         }
                 }

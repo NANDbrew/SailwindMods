@@ -12,11 +12,13 @@ namespace TweaksAndFixes
 {
     public static class Main
     {
+
         public static bool Load(UnityModManager.ModEntry modEntry)
         {
             new Harmony(modEntry.Info.Id).PatchAll(Assembly.GetExecutingAssembly());
 
             mod = modEntry;
+
 
             modEntry.OnToggle = OnToggle;
 
@@ -29,8 +31,10 @@ namespace TweaksAndFixes
             return true;
         }
 
+        public static UnityModManager.ModEntry.ModLogger logger;
+
         public static bool enabled;
         public static UnityModManager.ModEntry mod;
-        public static TAFSaveContainer saveContainer = new TAFSaveContainer();
+       // public static TAFSaveContainer saveContainer = new TAFSaveContainer();
     }
 }

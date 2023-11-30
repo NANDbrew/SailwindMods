@@ -44,6 +44,7 @@ namespace TweaksAndFixes.MonoBehaviourScripts
             }
             UpdateMissions();
             UpdateText();
+
         }
 
         public override void OnAltActivate()
@@ -61,6 +62,7 @@ namespace TweaksAndFixes.MonoBehaviourScripts
         {
             if (currentPort != null)
             {
+                MissionListUI.instance.EnablePortMissionUI(currentPort.GetPrivateField<Mission[]>("missions"), currentPort.GetDude().GetPrivateField<Transform>("missionTable"), currentPort.GetDude());
                 MissionSortButtonPatches.SortMissions(currentPort);
                 MissionListUI.instance.ChangePage(-(int)Traverse.Create(MissionListUI.instance).Field("currentPage").GetValue());
                 MissionDetailsUI.instance.GetPrivateField<GameObject>("UI").SetActive(false);

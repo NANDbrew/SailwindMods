@@ -19,7 +19,7 @@ namespace TweaksAndFixes.Patches
             {
                 if (Main.enabled)
                 {
-                    if (Utils.GamePaused) return false;
+                    if (SailwindModdingHelper.Utilities.GamePaused) return false;
                     if (GameInput.GetKeyDown(InputName.CameraMode))
                     {
                         return false;

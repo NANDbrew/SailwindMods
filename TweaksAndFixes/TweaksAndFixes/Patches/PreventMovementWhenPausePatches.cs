@@ -17,7 +17,7 @@ namespace TweaksAndFixes.Patches
             public static bool Prefix()
             {
                 if (!Main.enabled) return true;
-                return !Utils.GamePaused;
+                return !SailwindModdingHelper.Utilities.GamePaused;
             }
         }
 
@@ -28,7 +28,7 @@ namespace TweaksAndFixes.Patches
             public static bool Prefix()
             {
                 if (!Main.enabled) return true;
-                return !Utils.GamePaused;
+                return !SailwindModdingHelper.Utilities.GamePaused;
             }
         }
     }

@@ -17,7 +17,7 @@ namespace TweaksAndFixes.Patches
             [HarmonyPostfix]
             public static void Postfix()
             {
-                if (Input.GetKeyDown(KeyCode.F8) && GameState.playing && !Utils.GamePaused)
+                if (Input.GetKeyDown(KeyCode.F8) && GameState.playing && !SailwindModdingHelper.Utilities.GamePaused)
                 {
                     if (SaveLoadManager.readyToSave)
                     {
